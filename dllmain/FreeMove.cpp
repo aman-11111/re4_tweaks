@@ -10,7 +10,8 @@ bool HandleStrafing(bool not_fwd_back = false)
 		speed = 25.0f;
 
 	bool bKeyDown = false;
-	if (pInput->is_key_down(0x44))  // D
+	//if (pInput->is_key_down(0x44))  // D
+	if (game_KeyOnCheck_0(KEY_BTN::KEY_RIGHT))
 	{
 		float angleRight = PlayerPtr()->ang_A0.y;
 		Vec d;
@@ -23,7 +24,8 @@ bool HandleStrafing(bool not_fwd_back = false)
 		bKeyDown = true;
 	}
 	else
-		if (pInput->is_key_down(0x41)) // A
+		//if (pInput->is_key_down(0x41)) // A
+		if (game_KeyOnCheck_0(KEY_BTN::KEY_LEFT))
 		{
 			float angleRight = PlayerPtr()->ang_A0.y;
 			float angleLeft = angleRight + M_PI;  //left is 180 degree from right
@@ -122,11 +124,9 @@ void HandleAimAndMove()
 		float bobble_scale_y = 1.5f;
 		bobbleTimer += 0.25;
 		if (bobbleTimer > 2 * M_PI) bobbleTimer = 0;
-		float bobble_y = sin(bobbleTimer) * ((speed - minspeed) / minspeed) * bobble_scale_y;
+		//float bobble_y = sin(bobbleTimer) * ((speed - minspeed) / minspeed) * bobble_scale_y;
 		float bobble_x = sin(bobbleTimer + 2.0f) * ((speed - minspeed) / minspeed) * bobble_scale_x;
 		PlayerPtr()->pos_94.y += bobble_x;
-		//*fCameraPosY += bobble_x;
-		//PlayerPtr()->pos_94.x += bobble_x;
 	}
 
 	if (!keyDown)

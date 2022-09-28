@@ -228,6 +228,8 @@ void Config::ReadSettings(std::string_view ini_path)
 	pConfig->bFallbackToEnglishKeyIcons = iniReader.ReadBoolean("KEYBOARD", "FallbackToEnglishKeyIcons", pConfig->bFallbackToEnglishKeyIcons);
 	pConfig->bAllowReloadWithoutAiming_kbm = iniReader.ReadBoolean("KEYBOARD", "AllowReloadWithoutAiming", pConfig->bAllowReloadWithoutAiming_kbm);
 	pConfig->bReloadWithoutZoom_kbm = iniReader.ReadBoolean("KEYBOARD", "ReloadWithoutZoom", pConfig->bReloadWithoutZoom_kbm);
+	pConfig->bStrafing_kbm = iniReader.ReadBoolean("KEYBOARD", "Strafing", pConfig->bStrafing_kbm);
+	pConfig->bAimAndMove_kbm = iniReader.ReadBoolean("KEYBOARD", "AimAndMove", pConfig->bAimAndMove_kbm);
 
 	// CONTROLLER
 	pConfig->bOverrideControllerSensitivity = iniReader.ReadBoolean("CONTROLLER", "OverrideControllerSensitivity", pConfig->bOverrideControllerSensitivity);
@@ -474,6 +476,9 @@ DWORD WINAPI WriteSettingsThread(LPVOID lpParameter)
 	iniReader.WriteBoolean("KEYBOARD", "FallbackToEnglishKeyIcons", pConfig->bFallbackToEnglishKeyIcons);
 	iniReader.WriteBoolean("KEYBOARD", "AllowReloadWithoutAiming", pConfig->bAllowReloadWithoutAiming_kbm);
 	iniReader.WriteBoolean("KEYBOARD", "ReloadWithoutZoom", pConfig->bReloadWithoutZoom_kbm);
+	iniReader.WriteBoolean("KEYBOARD", "Strafing", pConfig->bStrafing_kbm);
+	iniReader.WriteBoolean("KEYBOARD", "AimAndMove", pConfig->bAimAndMove_kbm);
+
 
 	// CONTROLLER
 	iniReader.WriteBoolean("CONTROLLER", "OverrideControllerSensitivity", pConfig->bOverrideControllerSensitivity);
@@ -621,6 +626,8 @@ void Config::LogSettings()
 	spd::log()->info("| {:<30} | {:>15} |", "FallbackToEnglishKeyIcons", pConfig->bFallbackToEnglishKeyIcons ? "true" : "false");
 	spd::log()->info("| {:<30} | {:>15} |", "AllowReloadWithoutAiming", pConfig->bAllowReloadWithoutAiming_kbm ? "true" : "false");
 	spd::log()->info("| {:<30} | {:>15} |", "ReloadWithoutZoom", pConfig->bReloadWithoutZoom_kbm ? "true" : "false");
+	spd::log()->info("| {:<30} | {:>15} |", "Strafing", pConfig->bStrafing_kbm ? "true" : "false");
+	spd::log()->info("| {:<30} | {:>15} |", "AimAndMove", pConfig->bAimAndMove_kbm ? "true" : "false");
 	spd::log()->info("+--------------------------------+-----------------+");
 
 	// CONTROLLER

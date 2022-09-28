@@ -973,7 +973,6 @@ void cfgMenuRender()
 						if (ImGui::Checkbox("Strafing", &pConfig->bStrafing_kbm))
 						{
 							pConfig->HasUnsavedChanges = true;
-							NeedsToRestart = true;
 						}
 
 						ImGui_ItemSeparator();
