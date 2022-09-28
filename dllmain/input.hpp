@@ -37,6 +37,7 @@ public:
 	window_handle get_window_handle() const { return _window; }
 
 	bool _ignore_shortcuts = false;
+	float cached_player_ang_y; // for cancelling out changes by turning key 
 
 	static std::string KeyMap_getSTR(int keyINT);
 	static int KeyMap_getVK(std::string keySTR);

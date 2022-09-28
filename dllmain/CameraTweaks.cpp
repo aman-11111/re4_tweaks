@@ -2,6 +2,8 @@
 #include "dllmain.h"
 #include "Patches.h"
 #include "Settings.h"
+#include "input.hpp"
+#include "FreeMove.h"
 
 float fDefaultC_RANGE = 59.0f;
 float fCameraPosX_backup;
@@ -402,6 +404,15 @@ void Init_CameraTweaks()
 	{
 		void operator()(injector::reg_pack& regs)
 		{
+			// Free Move
+			if (pConfig->bAimAndMove_kbm)
+			{
+				HandleAimAndMove();
+			}
+			// save player angle to support turing cancelation hack
+			if (pConfig->bStrafing_kbm)
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+
 			// Reset fCameraPosX_backup after it has been used.
 			fCameraPosX_backup = 0.0f;
 

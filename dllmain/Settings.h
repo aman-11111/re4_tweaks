@@ -60,6 +60,8 @@ public:
 	bool bFallbackToEnglishKeyIcons = true;
 	bool bAllowReloadWithoutAiming_kbm = true;
 	bool bReloadWithoutZoom_kbm = false;
+	bool bStrafing_kbm = false;
+	bool bAimAndMove_kbm = false;
 
 	// CONTROLLER
 	bool bOverrideControllerSensitivity = false;

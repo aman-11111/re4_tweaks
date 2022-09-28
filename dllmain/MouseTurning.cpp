@@ -3,6 +3,7 @@
 #include "Patches.h"
 #include "Settings.h"
 #include "input.hpp"
+#include "FreeMove.h"
 
 uintptr_t* ptrKnife_r3_downMovAddr;
 
@@ -86,12 +87,23 @@ void MouseTurn(float TurnDelayFactor = 20.0f)
 
 		PlayerPtr()->ang_A0.y += (-intMouseDeltaX() / SpeedMulti) * pConfig->fTurnTypeBSensitivity;
 	}
+
+	// save a copy of player angle
+	if (pConfig->bStrafing_kbm)
+		pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 }
 
 bool __cdecl KeyOnCheck_hook(KEY_BTN a1)
 {
-	// Enable the turning animation/action if the mouse is moving
 
+	// Ugly hack for restoring player angle to before turning key changes
+	// LEFT/RIGHT turning key trigger strafing instead
+	if (pConfig->bStrafing_kbm)
+		if (a1 == KEY_BTN::KEY_LEFT || a1 == KEY_BTN::KEY_RIGHT)
+		     if (game_KeyOnCheck_0(a1))
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+
+	// Enable the turning animation/action if the mouse is moving
 	// Type A doesn't need this
 	if (pConfig->iMouseTurnType == MouseTurnTypes::TypeA)
 		return game_KeyOnCheck_0(a1);
@@ -182,6 +194,17 @@ void Init_MouseTurning()
 				// Check if default key is being pressed
 				bool isPressingDefaultKey = ((Key_btn_on() & (uint64_t)KEY_BTN::KEY_LEFT) == (uint64_t)KEY_BTN::KEY_LEFT);
 
+				if (pConfig->bStrafing_kbm && isPressingDefaultKey)
+				{
+					//cancel turning by keys
+					PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+					// strafing
+					HandleStrafing(true);
+					// need to also handle mouse turn when strafing
+					if (isMouseTurnEnabled() && ((intMouseDeltaX() > 8)|| (intMouseDeltaX() < -8)))
+						MouseTurn(); 
+				}
+
 				// Make game go back to the default procedure if the user started to hold the default key after moving the mouse
 				if (isPressingDefaultKey && (mi_ptr->Mot_attr_40 == 4))
 					regs.eax = 0;
@@ -219,6 +242,18 @@ void Init_MouseTurning()
 
 				// Check if default key is being pressed
 				bool isPressingDefaultKey = ((Key_btn_on() & (uint64_t)KEY_BTN::KEY_RIGHT) == (uint64_t)KEY_BTN::KEY_RIGHT);
+
+				if (pConfig->bStrafing_kbm && isPressingDefaultKey)
+				{
+					//cancel turning by keys
+					PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+					// strafing
+					HandleStrafing(true);
+					// need to also handle mouse turn when strafing
+					if (isMouseTurnEnabled() && ((intMouseDeltaX() > 8) || (intMouseDeltaX() < -8)))
+						MouseTurn();
+				}
+
 
 				// Make game go back to the default procedure if the user started to hold the default key after moving the mouse
 				if (isPressingDefaultKey && (mi_ptr->Mot_attr_40 == 4))
@@ -259,6 +294,12 @@ void Init_MouseTurning()
 			regs.ebp = *(int32_t*)(regs.esp);
 			*(int32_t*)(regs.esp) -= 0x8;
 
+			if (pConfig->bStrafing_kbm)
+			{
+				//cancel turning by keys
+				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+				HandleAimAndMove();
+			}
 			MouseTurn();
 		}
 	}; injector::MakeInline<TurnHookWalk>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
@@ -272,6 +313,13 @@ void Init_MouseTurning()
 			regs.ebp = *(int32_t*)(regs.esp);
 			*(int32_t*)(regs.esp) -= 0x8;
 
+			if (pConfig->bStrafing_kbm)
+			{
+
+				//cancel turning by keys
+				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+				HandleAimAndMove();
+			}
 			MouseTurn(5.0f);
 		}
 	}; injector::MakeInline<TurnHookRun>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
@@ -282,6 +330,12 @@ void Init_MouseTurning()
 	{
 		void operator()(injector::reg_pack& regs)
 		{
+			if (pConfig->bStrafing_kbm)
+			{
+				//cancel turning by keys
+				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+				HandleAimAndMove();
+			}
 			MouseTurn();
 		}
 	}; injector::MakeInline<TurnHookWalkingBack>(pattern.count(3).get(1).get<uint32_t>(0), pattern.count(3).get(1).get<uint32_t>(7));

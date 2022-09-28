@@ -966,6 +966,32 @@ void cfgMenuRender()
 						ImGui::TextWrapped("Don't zoom in when reloading without aiming.");
 						ImGui::TextWrapped("Not usually recomended, since the zooming in and out masks some animation quirks when the reload ends.");
 					}
+					// Free Move 
+					{
+						ImGui_ColumnSwitch();
+
+						if (ImGui::Checkbox("Strafing", &pConfig->bStrafing_kbm))
+						{
+							pConfig->HasUnsavedChanges = true;
+							NeedsToRestart = true;
+						}
+
+						ImGui_ItemSeparator();
+
+						ImGui::Dummy(ImVec2(10, 10));
+
+						ImGui::TextWrapped("Use turning keys to strafe");
+
+						ImGui::Dummy(ImVec2(10, 10));
+						ImGui_ItemSeparator2();
+						ImGui::Dummy(ImVec2(10, 10));
+
+						pConfig->HasUnsavedChanges |= ImGui::Checkbox("AimAndMove", &pConfig->bAimAndMove_kbm);
+
+						ImGui::Dummy(ImVec2(10, 10));
+						ImGui::TextWrapped("Free movement when aiming.");
+					}
+
 
 					ImGui_ColumnFinish();
 					ImGui::EndTable();
