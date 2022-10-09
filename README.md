@@ -1,5 +1,5 @@
 ### Description
-This is a fork of RE4 Tweaks repos for experiments of strafing and walking while aiming
+This is a fork of RE4 Tweaks repos for experimentations of strafing and walking while aiming
 
 ### What is new
 * **Strafing** - Use A,D keys or controller right stick to side step.
