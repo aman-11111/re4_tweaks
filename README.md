@@ -2,8 +2,8 @@
 This is a fork of RE4 Tweaks repos for experimentations of strafing and walking while aiming
 
 ### What is new
-* **Strafing** - Use A,D keys or controller right stick to side step.
-* **Walk while Aiming** - Use A,D,W,S key or contoller left strick to moving around.
+* **Strafing** - Use A,D keys or controller left stick to side step. Right stick to turn player.
+* **Walk while Aiming** - Use A,D,W,S key or contoller left strick to moving around. 
 
 ### Disclaimer 
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.   
