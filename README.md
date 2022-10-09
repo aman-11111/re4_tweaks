@@ -1,3 +1,34 @@
+### Description
+This is a fork of RE4 Tweaks repos for experiments of strafing and walking while aiming
+
+### What is new
+* **Strafing** - Use A,D keys or controller right stick to side step.
+* **Walk while Aiming** - Use A,D,W,S key or contoller left strick to moving around.
+
+### Disclaimer 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.   
+
+### Set up
+*  Compile project using Visual Studio. Copy dinput8.dll to RE4 BIN32 directory ,same location as bio4.exe.
+*  Start game. Using F1 key to bring up RE4 Tweaks in game menu. 
+*  Select Mouse category, enable "Mouse Turning" and select Type B.
+*  Select Keyboard category, enable "Strafing" and "AimAndMove".
+*  Click "save" button to save RE4 Tweaks configuration.
+*  Exit to game, In Game Option, select controller type III.
+*  Load or start a new game.
+
+### Known Issues
+*  Occasional  game freeze on start or after loading a save game.
+*  Only support A,D,W,S keys, non-configurable.
+*  Only support Controller Type III. Left stick for strafing. Right stick for turning. Run [A button] and turn together is not easy.
+*  Lot of game glitches. Ashley will not stay on ground height while player aim and walk up or down stairs.
+*  Not tested against the full game. Expected game breaking glitches.
+
+### Acknowledgments
+* [nipkownix] for releasing RE4 Tweaks with source code. A game enchancing framework that make this mod possible. 
+* [emoose] for providing coding advices, RE4 inner-working documentations and decompile source for RE4.
+
+
 ![re4_tweaks](https://raw.githubusercontent.com/nipkownix/nipkownix.github.io/master/assets/img/RE4T/re4_t.svg) 
 
 ### Description
