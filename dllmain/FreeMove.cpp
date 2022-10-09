@@ -2,86 +2,118 @@
 #include "Patches.h"
 #include "Settings.h"
 #include "input.hpp"
+#include "FreeMove.h"
 
-bool HandleStrafing(bool not_fwd_back = false)
+void HandlePadRightStickTurn(int8_t AnalogRX)
 {
-	float speed = 20.0f;
-	if (not_fwd_back)
-		speed = 25.0f;
+	pInput->RightStickTurning = 0;
+	if (AnalogRX < -2 || AnalogRX > 2)
+	{
+		float deltaTime = GlobalPtr()->deltaTime_70;
+		float SpeedMulti = 900.0f;
 
+		// not sure what to use here
+		// "Classic" aiming mode (0x00) needs lower sensitivity here.
+		//if (GetMouseAimingMode() == MouseAimingModes::Classic)
+			//SpeedMulti = 1300.0f;
+
+		PlayerPtr()->ang_A0.y += (-AnalogRX / SpeedMulti) * pConfig->fTurnTypeBSensitivity * deltaTime ;
+		// use this to trigger turning animation
+
+		if (*AnalogRX_8 > 2)
+			pInput->RightStickTurning = 0x4;
+		if (*AnalogRX_8 < -2)
+			pInput->RightStickTurning = 0x8;
+
+		// save player angle for walk/run/back to pickup
+		pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+	}
+}
+
+bool HandleStrafing(bool not_fwd_back)
+{
+	bool bGamePad = isController();
+	float deltaTime = GlobalPtr()->deltaTime_70;
+	float speed = 40.0f;
+	if (not_fwd_back)
+		speed = 50.0f;
 	bool bKeyDown = false;
-	//if (pInput->is_key_down(0x44))  // D
 	if (game_KeyOnCheck_0(KEY_BTN::KEY_RIGHT))
 	{
 		float angleRight = PlayerPtr()->ang_A0.y;
 		Vec d;
 		float dist = 10.0f;
-		d.x = -cosf(angleRight) * speed;
-		d.z = sinf(angleRight) * speed;
+		d.x = -cosf(angleRight) * speed * deltaTime;
+		d.z = sinf(angleRight) * speed * deltaTime; 
 
 		PlayerPtr()->pos_94.x += d.x;
 		PlayerPtr()->pos_94.z += d.z;
 		bKeyDown = true;
 	}
-	else
-		//if (pInput->is_key_down(0x41)) // A
-		if (game_KeyOnCheck_0(KEY_BTN::KEY_LEFT))
-		{
-			float angleRight = PlayerPtr()->ang_A0.y;
-			float angleLeft = angleRight + M_PI;  //left is 180 degree from right
-			Vec d;
-			float dist = 10.0f;
-			d.x = -cosf(angleLeft) * speed;
-			d.z = sinf(angleLeft) * speed;
+	if (game_KeyOnCheck_0(KEY_BTN::KEY_LEFT))
+	{
+		float angleRight = PlayerPtr()->ang_A0.y;
+		float angleLeft = angleRight + M_PI;  //left is 180 degree from right
+		Vec d;
+		float dist = 10.0f;
+		d.x = -cosf(angleLeft) * speed * deltaTime;
+		d.z = sinf(angleLeft) * speed * deltaTime;
 
-			PlayerPtr()->pos_94.x += d.x;
-			PlayerPtr()->pos_94.z += d.z;
-			bKeyDown = true;
-		}
+		PlayerPtr()->pos_94.x += d.x;
+		PlayerPtr()->pos_94.z += d.z;
+		bKeyDown = true;
+	}
 	return bKeyDown;
 }
 
 void HandleAimAndMove()
 {
-	float maxspeed = 30.0f;
+	float maxspeed = 60.0f;
 	float max_strafe_speed = maxspeed * 0.8f;
-	float acceleration = 3.0f;
-	float deceleration = 3.0f;
-	float minspeed = 5.0f;
+	float acceleration = 6.0f;
+	float deceleration = 6.0f;
+	float minspeed = 10.0f;
 	static float speed = minspeed;
 	static float strafe_speed = minspeed;
 	bool keyDown = false;
 	static float bobbleTimer = 0.0;
+	float deltaTime = GlobalPtr()->deltaTime_70;
+	bool bGamePad = false;
 
+	bGamePad = isController();
 
-
-	if (pInput->is_key_down(0x57))  // W
+	// For some reason leftStick changes AnalogRX,Y, rightStick changes AnalogLX,Y 
+	// Both Stick trigger KEY_FORWARD,BACK,LEFT, RIGHT. cannot tell which stick was pushed.
+	
+	// leftSTick and AWSD keys control player movement
+	// only read stick position if gamepad is used. otherwise mouse up/down motion also change the stick poistion, don't know why  
+	if  ((bGamePad && *AnalogRY_9 > 2) || pInput->is_key_down(0x57))  // W
 	{
 		if (keyDown)  speed = max(speed, max_strafe_speed);  // if side stepping slow down forward motion
 		Vec d;
 		float angleRight = PlayerPtr()->ang_A0.y;
 		float angleFwd = angleRight + (M_PI / 2.0f);  //forward is +90 degree from right
-		d.x = -cosf(angleFwd) * speed;
-		d.z = sinf(angleFwd) * speed;
+		d.x = -cosf(angleFwd) * speed * deltaTime;
+		d.z = sinf(angleFwd) * speed * deltaTime;
 		
 		PlayerPtr()->pos_94.x += d.x;
 		PlayerPtr()->pos_94.z += d.z;
 		keyDown = true;
 	}
-	else
-		if (pInput->is_key_down(0x53)) // S
-		{
-			float angleRight = PlayerPtr()->ang_A0.y;
-			float angleBack = angleRight - (M_PI / 2.0f);  //back is -90 degree from right
-			Vec d;
-			d.x = -cosf(angleBack) * speed;
-			d.z = sinf(angleBack) * speed;
-			PlayerPtr()->pos_94.x += d.x;
-			PlayerPtr()->pos_94.z += d.z;
-			keyDown = true;
-		}
 
-	if (pInput->is_key_down(0x41))  // key A
+	if ((bGamePad && *AnalogRY_9 < -2) || pInput->is_key_down(0x53)) // S
+	{
+		float angleRight = PlayerPtr()->ang_A0.y;
+		float angleBack = angleRight - (M_PI / 2.0f);  //back is -90 degree from right
+		Vec d;
+		d.x = -cosf(angleBack) * speed * deltaTime;
+		d.z = sinf(angleBack) * speed * deltaTime;
+		PlayerPtr()->pos_94.x += d.x;
+		PlayerPtr()->pos_94.z += d.z;
+		keyDown = true;
+	}
+
+	if ((bGamePad && *AnalogRX_8 < -2) || pInput->is_key_down(0x41))
 	{
 		Vec d;
 		strafe_speed = speed;
@@ -90,43 +122,42 @@ void HandleAimAndMove()
 		float angleRight = PlayerPtr()->ang_A0.y;
 		float angleLeft = angleRight + M_PI;  //left is +180 degree from right
 		float dist = 10.0f;
-		d.x = -cosf(angleLeft) * strafe_speed;
-		d.z = sinf(angleLeft) * strafe_speed;
+		d.x = -cosf(angleLeft) * strafe_speed * deltaTime;
+		d.z = sinf(angleLeft) * strafe_speed * deltaTime;
 		//d.y = 0;
 		PlayerPtr()->pos_94.x += d.x;
 		PlayerPtr()->pos_94.z += d.z;
 		keyDown = true;
 	}
-	else
-		if (pInput->is_key_down(0x44))  // D
-		{
-			strafe_speed = speed;
-			if (keyDown && (speed > max_strafe_speed))
-				strafe_speed = max_strafe_speed;
 
-			float angleRight = PlayerPtr()->ang_A0.y;
-			Vec d;
-			d.x = -cosf(angleRight) * strafe_speed;
-			d.z = sinf(angleRight) * strafe_speed;
+	if ((bGamePad && *AnalogRX_8 > 2)|| pInput->is_key_down(0x44))  // D
+	{
+		strafe_speed = speed;
+		if (keyDown && (speed > max_strafe_speed))
+			strafe_speed = max_strafe_speed;
 
-			PlayerPtr()->pos_94.x += d.x;
-			PlayerPtr()->pos_94.z += d.z;
-			keyDown = true;
-		}
+		float angleRight = PlayerPtr()->ang_A0.y;
+		Vec d;
+		d.x = -cosf(angleRight) * strafe_speed * deltaTime;
+		d.z = sinf(angleRight) * strafe_speed * deltaTime;
+
+		PlayerPtr()->pos_94.x += d.x;
+		PlayerPtr()->pos_94.z += d.z;
+		keyDown = true;
+	}
 
 	if (keyDown)
 		speed += acceleration;
 
 	if (speed > minspeed) // simulate walking bobble
 	{
-
 		float bobble_scale_x = 1.5f;
 		float bobble_scale_y = 1.5f;
-		bobbleTimer += 0.25;
+		bobbleTimer += 0.5 * deltaTime;
 		if (bobbleTimer > 2 * M_PI) bobbleTimer = 0;
 		//float bobble_y = sin(bobbleTimer) * ((speed - minspeed) / minspeed) * bobble_scale_y;
-		float bobble_x = sin(bobbleTimer + 2.0f) * ((speed - minspeed) / minspeed) * bobble_scale_x;
-		PlayerPtr()->pos_94.y += bobble_x;
+		float bobble_y = sin(bobbleTimer + 2.0f) * ((speed - minspeed) / minspeed) * bobble_scale_y;
+		PlayerPtr()->pos_94.y += bobble_y;
 	}
 
 	if (!keyDown)

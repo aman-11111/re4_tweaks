@@ -21,6 +21,8 @@ float* wepPitch; // m3r.y
 float* fMousePosX;
 float* fMousePosY;
 
+int8_t* AnalogLX_0;
+int8_t* AnalogLY_4;
 int8_t* AnalogRX_8;
 int8_t* AnalogRY_9;
 
@@ -116,6 +118,25 @@ void Init_CameraTweaks()
 	pattern = hook::pattern("A2 ? ? ? ? EB ? DD D8 8B 0D");
 	AnalogRX_8 = (int8_t*)*pattern.count(1).get(0).get<uint32_t>(1);
 	AnalogRY_9 = AnalogRX_8 + 1;
+	AnalogLX_0 = AnalogRX_8 - 8;
+	AnalogLY_4 = AnalogRX_8 - 4;
+
+	//  Enable camera lock for aiming with gamepad.  Player's head blocking sight of target while strafing
+	struct CameraLockPadCmp
+	{
+		void operator()(injector::reg_pack& regs)
+		{
+			// Mimic what CMP does, since we're overwriting it.
+			if (pConfig->bAimAndMove_kbm)
+			{
+				// ZF = 1, CF = 0
+				regs.ef |= (1 << regs.zero_flag);
+				regs.ef &= ~(1 << regs.carry_flag);
+			}
+		}
+	};
+	pattern = hook::pattern("A1 ? ? ? ? 85 C0 74 1B 83 F8 01 74 16");
+	injector::MakeInline<CameraLockPadCmp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 	// Hook PadRead to change the camera sensitivity
 	pattern = hook::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
@@ -235,6 +256,14 @@ void Init_CameraTweaks()
 			}
 			else
 			{
+				if (pConfig->bStrafing_kbm)
+				{
+					// right stick for turning when strafing with left stick 
+					HandlePadRightStickTurn(*AnalogRX_8);
+					// disable camera panning, camera lock to player turning
+					*AnalogRX_8 = 0;
+				}
+
 				*C_RANGE_1097 = fDefaultC_RANGE;
 				*(float*)(regs.ebp - 0x8) = (float)*AnalogRX_8;
 			}
@@ -403,13 +432,19 @@ void Init_CameraTweaks()
 	struct PlWepLockCtrlPitchClamp
 	{
 		void operator()(injector::reg_pack& regs)
-		{
+		{   
 			// Free Move
 			if (pConfig->bAimAndMove_kbm)
 			{
 				HandleAimAndMove();
+				if (isController())
+				{ // disable Camera paning
+					*fMousePosX = 0.0f;
+					*fCameraPosX = 0.0f;
+					*AnalogRX_8 = 0;
+				}
 			}
-			// save player angle to support turing cancelation hack
+			// save player angle to so walking mode pick up new angle 
 			if (pConfig->bStrafing_kbm)
 				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 

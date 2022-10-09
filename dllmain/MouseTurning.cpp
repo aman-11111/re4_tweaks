@@ -95,20 +95,26 @@ void MouseTurn(float TurnDelayFactor = 20.0f)
 
 bool __cdecl KeyOnCheck_hook(KEY_BTN a1)
 {
+	bool ret = false;
+	bool isMovingRightStick = false;
 
-	// Ugly hack for restoring player angle to before turning key changes
 	// LEFT/RIGHT turning key trigger strafing instead
 	if (pConfig->bStrafing_kbm)
 		if (a1 == KEY_BTN::KEY_LEFT || a1 == KEY_BTN::KEY_RIGHT)
-		     if (game_KeyOnCheck_0(a1))
+		{
+			// save a copy of player angel before turning, use this to cancel turning 
+			if (game_KeyOnCheck_0(a1))
 				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+			// Trigger turning animation for controller
+			if (pInput->RightStickTurning)
+				ret = true;
+		}
 
 	// Enable the turning animation/action if the mouse is moving
 	// Type A doesn't need this
 	if (pConfig->iMouseTurnType == MouseTurnTypes::TypeA)
 		return game_KeyOnCheck_0(a1);
 
-	bool ret = false;
 	bool isMovingMouse = false;
 
 	if (a1 == KEY_BTN::KEY_LEFT)
@@ -119,7 +125,16 @@ bool __cdecl KeyOnCheck_hook(KEY_BTN a1)
 	switch (LastUsedDevice()) {
 		case InputDevices::DinputController:
 		case InputDevices::XinputController:
-			ret = game_KeyOnCheck_0(a1);
+			if (pConfig->bStrafing_kbm)
+			{
+				isMovingRightStick = (pInput->RightStickTurning != 0x0);
+				if (ret) //isMovingRightStick)
+					ret = true;
+				else
+					ret = game_KeyOnCheck_0(a1);
+			}
+			else
+				ret = game_KeyOnCheck_0(a1);
 			break;
 		case InputDevices::Keyboard:
 		case InputDevices::Mouse:
@@ -185,6 +200,40 @@ void Init_MouseTurning()
 			switch (LastUsedDevice()) {
 			case InputDevices::DinputController:
 			case InputDevices::XinputController:
+			{
+				// handle left stick strafing and turning animation
+				bool isPressingDefaultKey = ((Key_btn_on() & (uint64_t)KEY_BTN::KEY_LEFT) == (uint64_t)KEY_BTN::KEY_LEFT);
+				if (pConfig->bStrafing_kbm)
+				{
+					// Get pointer to cModel->MotInfo_1D8
+					MOTION_INFO* mi_ptr = (MOTION_INFO*)(regs.esi + 0x1D8);
+					//if (isPressingDefaultKey)
+					{
+						//cancel turning by keys
+						PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+						// strafing
+						HandleStrafing(true);
+					}
+					// starfing and turing at the same time
+					if (isPressingDefaultKey && (pInput->RightStickTurning))
+					{
+						mi_ptr->Mot_attr_40 = 4;
+						// only left turn animation works
+						regs.eax = 0x8;
+					}
+					else  
+						// only stafing, animation is already running let it continue
+						if (isPressingDefaultKey && mi_ptr->Mot_attr_40 == 4)
+							regs.eax = 0;
+						else  // when no strafing only turning, start a new animation
+							if (pInput->RightStickTurning)
+							{
+								// start new turning animation for controller turning
+								mi_ptr->Mot_attr_40 = 4;
+								regs.eax = 0x8;
+							}
+				}
+			}
 				break;
 			case InputDevices::Keyboard:
 			case InputDevices::Mouse:
@@ -234,6 +283,39 @@ void Init_MouseTurning()
 			switch (LastUsedDevice()) {
 			case InputDevices::DinputController:
 			case InputDevices::XinputController:
+			{
+				// handle left stick strafing and turing animation
+				bool isPressingDefaultKey = ((Key_btn_on() & (uint64_t)KEY_BTN::KEY_RIGHT) == (uint64_t)KEY_BTN::KEY_RIGHT);
+
+				if (pConfig->bStrafing_kbm )	
+				{
+					MOTION_INFO* mi_ptr = (MOTION_INFO*)(regs.esi + 0x1D8);
+					//if (isPressingDefaultKey)
+					{
+						//cancel turning by keys					
+						PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+						//strafing
+						HandleStrafing(true);
+					}
+
+					// stafing and turning at the same time
+					if (isPressingDefaultKey && pInput->RightStickTurning)
+					{
+						mi_ptr->Mot_attr_40 = 4;
+						// only right turn animation works
+						regs.eax = 0x4;
+					}
+					else // only stafing, animation is going let it continue
+						if (isPressingDefaultKey && mi_ptr->Mot_attr_40 == 4)
+							regs.eax = 0;
+						else // only turing, no strafing
+							if (pInput->RightStickTurning)
+							{
+								mi_ptr->Mot_attr_40 = 4;
+								regs.eax = 0x4;
+							}
+				}
+			}
 				break;
 			case InputDevices::Keyboard:
 			case InputDevices::Mouse:
@@ -245,7 +327,7 @@ void Init_MouseTurning()
 
 				if (pConfig->bStrafing_kbm && isPressingDefaultKey)
 				{
-					//cancel turning by keys
+					//cancel turning
 					PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
 					// strafing
 					HandleStrafing(true);
@@ -282,6 +364,10 @@ void Init_MouseTurning()
 			regs.eax = *(int8_t*)(regs.esi + 0xFE);
 
 			MouseTurn();
+			// save a copy of player angle
+			if (pConfig->bStrafing_kbm)
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+
 		}
 	}; injector::MakeInline<TurnHook180>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
@@ -296,11 +382,13 @@ void Init_MouseTurning()
 
 			if (pConfig->bStrafing_kbm)
 			{
-				//cancel turning by keys
+				//cancel turning
 				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
-				HandleAimAndMove();
-			}
+				HandleStrafing();
+			}			
 			MouseTurn();
+			if (pConfig->bStrafing_kbm)
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 		}
 	}; injector::MakeInline<TurnHookWalk>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
@@ -318,9 +406,11 @@ void Init_MouseTurning()
 
 				//cancel turning by keys
 				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
-				HandleAimAndMove();
+				HandleStrafing();
 			}
 			MouseTurn(5.0f);
+			if (pConfig->bStrafing_kbm)
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 		}
 	}; injector::MakeInline<TurnHookRun>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
@@ -334,9 +424,12 @@ void Init_MouseTurning()
 			{
 				//cancel turning by keys
 				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
-				HandleAimAndMove();
+				HandleStrafing();
 			}
 			MouseTurn();
+			if (pConfig->bStrafing_kbm)
+				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+
 		}
 	}; injector::MakeInline<TurnHookWalkingBack>(pattern.count(3).get(1).get<uint32_t>(0), pattern.count(3).get(1).get<uint32_t>(7));
 	injector::WriteMemory(pattern.count(3).get(1).get<uint32_t>(7), uint8_t(0xEB), true);
