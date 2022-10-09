@@ -121,32 +121,6 @@ void Init_CameraTweaks()
 	AnalogLX_0 = AnalogRX_8 - 8;
 	AnalogLY_4 = AnalogRX_8 - 4;
 
-	//  Enable camera lock for aiming with gamepad.  Player's head blocking sight of target while strafing
-	struct CameraLockPadCmp
-	{
-		void operator()(injector::reg_pack& regs)
-		{
-			// Mimic what CMP does, since we're overwriting it.
-			if (pConfig->bAimAndMove_kbm)
-			{
-				// ZF = 1, CF = 0
-				regs.ef |= (1 << regs.zero_flag);
-				regs.ef &= ~(1 << regs.carry_flag);
-			}
-			else
-			{
-				if (regs.eax <= 1)
-				{
-					// ZF = 1, CF = 0
-					regs.ef |= (1 << regs.zero_flag);
-					regs.ef &= ~(1 << regs.carry_flag);
-				}
-			}
-		}
-	};
-	pattern = hook::pattern("74 1b 83 f8 01 74 16 d9");
-	injector::MakeInline<CameraLockPadCmp>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
-
 	// Hook PadRead to change the camera sensitivity
 	pattern = hook::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
 	struct CameraSens
