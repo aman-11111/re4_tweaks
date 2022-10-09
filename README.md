@@ -14,14 +14,15 @@ This is a fork of RE4 Tweaks repos for experiments of strafing and walking while
 *  Select Mouse category, enable "Mouse Turning" and select Type B.
 *  Select Keyboard category, enable "Strafing" and "AimAndMove".
 *  Click "save" button to save RE4 Tweaks configuration.
-*  Exit to game, In Game Option, select controller type III.
+*  Exit back to game. In game Option menu, select controller type III.
 *  Load or start a new game.
 
 ### Known Issues
 *  Occasional  game freeze on start or after loading a save game.
 *  Only support A,D,W,S keys, non-configurable.
 *  Only support Controller Type III. Left stick for strafing. Right stick for turning. Run [A button] and turn together is not easy.
-*  Lot of game glitches. Ashley will not stay on ground height while player aim and walk up or down stairs.
+*  No player animation for strafing. No animation for walking while aiming
+*  Lot of game glitches. Ashley following Leon will not stay on ground height while he aim and walk up or down stairs.
 *  Not tested against the full game. Expected game breaking glitches.
 
 ### Acknowledgments
