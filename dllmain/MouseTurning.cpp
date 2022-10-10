@@ -153,6 +153,19 @@ void Init_MouseTurning()
 	auto pattern = hook::pattern("DB 05 ? ? ? ? D9 45 ? D9 C0 DE CA D9 C5");
 	ptrMouseDeltaX = *pattern.count(1).get(0).get<uint32_t*>(2);
 
+	// Cache player angle before keyOnCheck to prevent old player angle being used on start of new map 
+	pattern = hook::pattern("8B C1 83 E0 01 0B C3 74 ? 83 E1 02 0B CB");
+	struct PlayerAction
+	{
+		void operator()(injector::reg_pack& regs)
+		{
+			pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+			// code we replaced
+			regs.eax = regs.ecx;
+			regs.eax &= 0x1;
+		}
+	}; injector::MakeInline<PlayerAction>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
+
 	// Keep CameraXpos at 0f while isMouseTurnEnabled
 	pattern = hook::pattern("D9 05 ? ? ? ? DE C2 D9 C9 D9 1D ? ? ? ? D9 85");
 	struct CameraPositionWriter
