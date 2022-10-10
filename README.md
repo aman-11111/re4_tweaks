@@ -27,7 +27,7 @@ This is a fork of RE4 Tweaks repo for experimentations of strafing and walking w
 
 ### Acknowledgments
 * [nipkownix] for releasing RE4 Tweaks with source code. A game enchancing framework that make this mod possible. 
-* [emoose] for providing coding advices, his RE4 resarches and decompiled sources.
+* [emoose] for providing coding advices, his RE4 researches and decompiled sources.
 
 
 ![re4_tweaks](https://raw.githubusercontent.com/nipkownix/nipkownix.github.io/master/assets/img/RE4T/re4_t.svg) 
