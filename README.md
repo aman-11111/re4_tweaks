@@ -1,5 +1,5 @@
 ### Description
-This is a fork of RE4 Tweaks repos for experimentations of strafing and walking while aiming
+This is a fork of RE4 Tweaks repo for experimentations of strafing and walking while aiming
 
 ### What is new
 * **Strafing** - Use A,D keys or controller left stick to side step. Right stick to turn player.
@@ -27,7 +27,7 @@ This is a fork of RE4 Tweaks repos for experimentations of strafing and walking 
 
 ### Acknowledgments
 * [nipkownix] for releasing RE4 Tweaks with source code. A game enchancing framework that make this mod possible. 
-* [emoose] for providing coding advices and decompile source for RE4.
+* [emoose] for providing coding advices, his RE4 researches and decompiled sources.
 
 
 ![re4_tweaks](https://raw.githubusercontent.com/nipkownix/nipkownix.github.io/master/assets/img/RE4T/re4_t.svg) 
