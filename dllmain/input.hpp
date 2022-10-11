@@ -39,6 +39,7 @@ public:
 	bool _ignore_shortcuts = false;
 	float cached_player_ang_y; // for cancelling out changes by turning key 
 	uint16_t  RightStickTurning = 0;   // for pad right stick turning
+	bool bAiming = false; // aiming state
 
 	static std::string KeyMap_getSTR(int keyINT);
 	static int KeyMap_getVK(std::string keySTR);
