@@ -164,7 +164,7 @@ void Init_MouseTurning()
 			regs.eax = regs.ecx;
 			regs.eax &= 0x1;
 		}
-	}; injector::MakeInline<PlayerAction>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
+	}; // injector::MakeInline<PlayerAction>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
 	// Keep CameraXpos at 0f while isMouseTurnEnabled
 	pattern = hook::pattern("D9 05 ? ? ? ? DE C2 D9 C9 D9 1D ? ? ? ? D9 85");
