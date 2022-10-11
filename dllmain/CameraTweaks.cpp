@@ -27,8 +27,6 @@ int8_t* AnalogRX_8;
 int8_t* AnalogRY_9;
 
 uintptr_t* knife_r3_set40_jmpAddr;
-// Original game funcs
-void (__cdecl* cSubChar_inSat) (void* _this);
 
 double CameraControl__getCameraPitch_hook()
 {
@@ -122,29 +120,6 @@ void Init_CameraTweaks()
 	AnalogRY_9 = AnalogRX_8 + 1;
 	AnalogLX_0 = AnalogRX_8 - 8;
 	AnalogLY_4 = AnalogRX_8 - 4;
-
-	// Pointer to the original KeyOnCheck
-	pattern = hook::pattern("E8 ? ? ? ? d9 05 ? ? ? ? 6a f6 83 ec 08");
-	ReadCall(injector::GetBranchDestination(pattern.count(1).get(0).get<uint32_t>(0)).as_int(), cSubChar_inSat);
-
-	// force foller floor check, fix a glictes for aim walking that companion not stay on floor
-	pattern = hook::pattern("d9 5d fc d9 45 fc d9 5c 24 08");
-	//pattern = hook::pattern("dc 0d ? ? ? ? d9 5d fc d9 45 fc d9 5c 24 08");
-	struct moveBehindFloorCheck
-	{
-		void operator()(injector::reg_pack& regs)
-		{
-
-			if (pInput->bAiming)
-				cSubChar_inSat((void*) regs.esi);
-			// original code
-			_asm {
-				fstp [regs.ebp + 0x4]
-				//mov[regs.ebp + 0x4], 0.0f
-				fld [regs.ebp + 0x4]
-			}
-		}
-	};// injector::MakeInline<moveBehindFloorCheck>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 
 	// Hook PadRead to change the camera sensitivity
 	pattern = hook::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
@@ -381,8 +356,6 @@ void Init_CameraTweaks()
 				*fMousePosX = 0.0f;
 				*AnalogRX_8 = 0;
 			}
-			if (pConfig->bAimAndMove_kbm)
-				pInput->bAiming = true;
 		}
 	}; injector::MakeInline<CamCtrlShoulderSetAimHook>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
@@ -431,8 +404,6 @@ void Init_CameraTweaks()
 			{
 				*fMousePosY = 0.0f;
 			}
-			if (pConfig->bAimAndMove_kbm)
-				pInput->bAiming = false;
 		}
 	}; injector::MakeInline<PadReadYAfterAimReset>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
 	
