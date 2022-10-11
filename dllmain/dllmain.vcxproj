@@ -22,7 +22,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <LocalDebuggerCommand>$(BIO4_BIN)\bio4.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(BIO4_BIN)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -68,7 +68,7 @@
       <AdditionalLibraryDirectories>..\external\freetype\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(TargetFileName)" "%BIO4_BIN%\$(TargetFileName)"</Command>
+      <Command>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Steam\steamapps\common\Resident Evil 4\Bin32\$(TargetFileName)"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>del gitparams.h
@@ -137,6 +137,7 @@ echo | set /p dummyName=#define GIT_BRANCH ^"%VAR%^" &gt;&gt; gitparams.h</Comma
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EndSceneHook.cpp" />
     <ClCompile Include="ExceptionHandler.cpp" />
+    <ClCompile Include="FreeMove.cpp" />
     <ClCompile Include="HDProject.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="Game.cpp" />

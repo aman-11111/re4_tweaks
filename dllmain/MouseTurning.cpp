@@ -154,6 +154,19 @@ void Init_MouseTurning()
 	ptrMouseDeltaX = *pattern.count(1).get(0).get<uint32_t*>(2);
 
 	// Cache player angle before keyOnCheck to prevent old player angle being used on start of new map 
+	pattern = hook::pattern("89 98 80 84 00 00 e8 ? ? ? ? 8b 4d fc");
+	struct GameRoomInit_pos
+	{
+		void operator()(injector::reg_pack& regs)
+		{
+			pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
+			_asm {
+				mov [regs.eax+0x8480],ebx
+			 }
+		}
+	};  injector::MakeInline<GameRoomInit_pos>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
+
+	// Cache player angle before keyOnCheck to prevent old player angle being used on start of new map 
 	pattern = hook::pattern("8B C1 83 E0 01 0B C3 74 ? 83 E1 02 0B CB");
 	struct PlayerAction
 	{
