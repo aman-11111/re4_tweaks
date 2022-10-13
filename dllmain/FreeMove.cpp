@@ -3,11 +3,11 @@
 #include "Settings.h"
 #include "input.hpp"
 #include "FreeMove.h"
-
+#define DEAD_ZONE_X   1
 void HandlePadRightStickTurn(int8_t AnalogRX)
 {
 	pInput->RightStickTurning = 0;
-	if (AnalogRX < -2 || AnalogRX > 2)
+	if (AnalogRX < -DEAD_ZONE_X || AnalogRX > DEAD_ZONE_X)
 	{
 		float deltaTime = GlobalPtr()->deltaTime_70;
 		float SpeedMulti = 900.0f;
@@ -18,14 +18,14 @@ void HandlePadRightStickTurn(int8_t AnalogRX)
 			//SpeedMulti = 1300.0f;
 
 		PlayerPtr()->ang_A0.y += (-AnalogRX / SpeedMulti) * pConfig->fTurnTypeBSensitivity * deltaTime ;
-		// use this to trigger turning animation
 
-		if (*AnalogRX_8 > 2)
+		// use this to trigger turning animation
+		if (*AnalogRX_8 > DEAD_ZONE_X)
 			pInput->RightStickTurning = 0x4;
-		if (*AnalogRX_8 < -2)
+		if (*AnalogRX_8 < -DEAD_ZONE_X)
 			pInput->RightStickTurning = 0x8;
 
-		// save player angle for walk/run/back to pickup
+		// save player angle for pl_R1_TurnLeft/Right to pickup, this allow strafing pick up turning at the same time
 		pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 	}
 }
@@ -36,7 +36,7 @@ bool HandleStrafing(bool not_fwd_back)
 	float deltaTime = GlobalPtr()->deltaTime_70;
 	float speed = 40.0f;
 	if (not_fwd_back)
-		speed = 50.0f;
+		speed = 60.0f;
 	bool bKeyDown = false;
 	if (game_KeyOnCheck_0(KEY_BTN::KEY_RIGHT))
 	{
@@ -87,7 +87,7 @@ void HandleAimAndMove()
 	
 	// leftSTick and AWSD keys control player movement
 	// only read stick position if gamepad is used. otherwise mouse up/down motion also change the stick poistion, don't know why  
-	if  ((bGamePad && *AnalogRY_9 > 2) || pInput->is_key_down(0x57))  // W
+	if  ((bGamePad && *AnalogRY_9 > DEAD_ZONE_X) || pInput->is_key_down(0x57))  // W
 	{
 		if (keyDown)  speed = max(speed, max_strafe_speed);  // if side stepping slow down forward motion
 		Vec d;
@@ -101,7 +101,7 @@ void HandleAimAndMove()
 		keyDown = true;
 	}
 
-	if ((bGamePad && *AnalogRY_9 < -2) || pInput->is_key_down(0x53)) // S
+	if ((bGamePad && *AnalogRY_9 < -DEAD_ZONE_X) || pInput->is_key_down(0x53)) // S
 	{
 		float angleRight = PlayerPtr()->ang_A0.y;
 		float angleBack = angleRight - (M_PI / 2.0f);  //back is -90 degree from right
@@ -113,7 +113,7 @@ void HandleAimAndMove()
 		keyDown = true;
 	}
 
-	if ((bGamePad && *AnalogRX_8 < -2) || pInput->is_key_down(0x41))
+	if ((bGamePad && *AnalogRX_8 < -DEAD_ZONE_X) || pInput->is_key_down(0x41))
 	{
 		Vec d;
 		strafe_speed = speed;
@@ -130,7 +130,7 @@ void HandleAimAndMove()
 		keyDown = true;
 	}
 
-	if ((bGamePad && *AnalogRX_8 > 2)|| pInput->is_key_down(0x44))  // D
+	if ((bGamePad && *AnalogRX_8 > DEAD_ZONE_X)|| pInput->is_key_down(0x44))  // D
 	{
 		strafe_speed = speed;
 		if (keyDown && (speed > max_strafe_speed))

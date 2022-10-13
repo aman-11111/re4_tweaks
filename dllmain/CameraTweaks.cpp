@@ -444,10 +444,6 @@ void Init_CameraTweaks()
 					*AnalogRX_8 = 0;
 				}
 			}
-			// save player angle to so walking mode pick up new angle 
-			if (pConfig->bStrafing_kbm)
-				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
-
 			// Reset fCameraPosX_backup after it has been used.
 			fCameraPosX_backup = 0.0f;
 

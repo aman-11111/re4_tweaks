@@ -88,7 +88,7 @@ void MouseTurn(float TurnDelayFactor = 20.0f)
 		PlayerPtr()->ang_A0.y += (-intMouseDeltaX() / SpeedMulti) * pConfig->fTurnTypeBSensitivity;
 	}
 
-	// save a copy of player angle
+	// save a copy of player angle, this allow strafing pick up turning at the same time
 	if (pConfig->bStrafing_kbm)
 		pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 }
@@ -105,7 +105,7 @@ bool __cdecl KeyOnCheck_hook(KEY_BTN a1)
 			// save a copy of player angel before turning, use this to cancel turning 
 			if (game_KeyOnCheck_0(a1))
 				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
-			// Trigger turning animation for controller
+			//Trigger turning animation for controller
 			if (pInput->RightStickTurning)
 				ret = true;
 		}
@@ -153,18 +153,16 @@ void Init_MouseTurning()
 	auto pattern = hook::pattern("DB 05 ? ? ? ? D9 45 ? D9 C0 DE CA D9 C5");
 	ptrMouseDeltaX = *pattern.count(1).get(0).get<uint32_t*>(2);
 
-	// Cache player angle after roomInit to  prevent old player angle being used on start of new map 
-	pattern = hook::pattern("89 98 80 84 00 00 e8 ? ? ? ? 8b 4d fc");
-	//pattern = hook::pattern("83 C4 14 84 C0 74 2F DD 05");
-	struct GameRoomInit_pos
+	pattern = hook::pattern("0f b6 86 fe 00 00 00 83 f8 03 0f 87");
+	struct pl_R1_Turn_entry
 	{
 		void operator()(injector::reg_pack& regs)
 		{
 			pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 			// code we replaced
-			*(uint32_t*)(regs.eax + 0x8480) = regs.ebx;
+			regs.eax = (int32_t )*(int8_t *)(regs.esi + 0xfe);
 		}
-	};  injector::MakeInline<GameRoomInit_pos>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
+	};  injector::MakeInline<pl_R1_Turn_entry>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
 	// Keep CameraXpos at 0f while isMouseTurnEnabled
 	pattern = hook::pattern("D9 05 ? ? ? ? DE C2 D9 C9 D9 1D ? ? ? ? D9 85");
@@ -220,13 +218,11 @@ void Init_MouseTurning()
 				{
 					// Get pointer to cModel->MotInfo_1D8
 					MOTION_INFO* mi_ptr = (MOTION_INFO*)(regs.esi + 0x1D8);
-					//if (isPressingDefaultKey)
-					{
-						//cancel turning by keys
-						PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
-						// strafing
-						HandleStrafing(true);
-					}
+					//cancel turning by keys
+					PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+					// strafing
+					HandleStrafing(true);
+
 					// starfing and turing at the same time
 					if (isPressingDefaultKey && (pInput->RightStickTurning))
 					{
@@ -303,13 +299,10 @@ void Init_MouseTurning()
 				if (pConfig->bStrafing_kbm )	
 				{
 					MOTION_INFO* mi_ptr = (MOTION_INFO*)(regs.esi + 0x1D8);
-					//if (isPressingDefaultKey)
-					{
-						//cancel turning by keys					
-						PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
-						//strafing
-						HandleStrafing(true);
-					}
+					//cancel turning by keys					
+					PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
+					//strafing
+					HandleStrafing(true);
 
 					// stafing and turning at the same time
 					if (isPressingDefaultKey && pInput->RightStickTurning)
@@ -349,7 +342,6 @@ void Init_MouseTurning()
 						MouseTurn();
 				}
 
-
 				// Make game go back to the default procedure if the user started to hold the default key after moving the mouse
 				if (isPressingDefaultKey && (mi_ptr->Mot_attr_40 == 4))
 					regs.eax = 0;
@@ -375,12 +367,7 @@ void Init_MouseTurning()
 		void operator()(injector::reg_pack& regs)
 		{
 			regs.eax = *(int8_t*)(regs.esi + 0xFE);
-
 			MouseTurn();
-			// save a copy of player angle
-			if (pConfig->bStrafing_kbm)
-				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
-
 		}
 	}; injector::MakeInline<TurnHook180>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(7));
 
@@ -395,17 +382,37 @@ void Init_MouseTurning()
 
 			if (pConfig->bStrafing_kbm)
 			{
-				//cancel turning
-				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
 				HandleStrafing();
 			}			
 			MouseTurn();
-			if (pConfig->bStrafing_kbm)
-				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 		}
 	}; injector::MakeInline<TurnHookWalk>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
-	// pl_R1_Run
+	// turning key is replaced by strafing, ignore turning
+	struct DisableKeyTurn
+	{
+		void operator()(injector::reg_pack& regs)
+		{
+			if (pConfig->bStrafing_kbm)
+			{
+				regs.ecx = 0;
+			}
+			// code we replace
+			regs.eax = regs.ecx;
+			regs.eax &= 0x4;
+		}
+	};
+	// walk
+	pattern = hook::pattern("8b C1 83 e0 04 33 d2 0b c2 74 23");
+	injector::MakeInline<DisableKeyTurn>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
+	// back
+	pattern = hook::pattern("8b C1 83 e0 04 33 d2 0b c2 74 18");
+	injector::MakeInline<DisableKeyTurn>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5)); 
+	// run
+	pattern = hook::pattern("8b C1 83 e0 04 33 d2 0b c2 74 1f");
+	injector::MakeInline<DisableKeyTurn>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
+	
+		// pl_R1_Run
 	pattern = hook::pattern("8B EC 83 EC ? 53 56 8B 75 ? 0F B6 86 ? ? ? ? 33 DB");
 	struct TurnHookRun
 	{
@@ -416,14 +423,9 @@ void Init_MouseTurning()
 
 			if (pConfig->bStrafing_kbm)
 			{
-
-				//cancel turning by keys
-				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
 				HandleStrafing();
 			}
 			MouseTurn(5.0f);
-			if (pConfig->bStrafing_kbm)
-				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
 		}
 	}; injector::MakeInline<TurnHookRun>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(5));
 
@@ -435,14 +437,9 @@ void Init_MouseTurning()
 		{
 			if (pConfig->bStrafing_kbm)
 			{
-				//cancel turning by keys
-				PlayerPtr()->ang_A0.y = pInput->cached_player_ang_y;
 				HandleStrafing();
 			}
 			MouseTurn();
-			if (pConfig->bStrafing_kbm)
-				pInput->cached_player_ang_y = PlayerPtr()->ang_A0.y;
-
 		}
 	}; injector::MakeInline<TurnHookWalkingBack>(pattern.count(3).get(1).get<uint32_t>(0), pattern.count(3).get(1).get<uint32_t>(7));
 	injector::WriteMemory(pattern.count(3).get(1).get<uint32_t>(7), uint8_t(0xEB), true);
