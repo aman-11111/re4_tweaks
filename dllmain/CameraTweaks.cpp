@@ -121,6 +121,23 @@ void Init_CameraTweaks()
 	AnalogLX_0 = AnalogRX_8 - 8;
 	AnalogLY_4 = AnalogRX_8 - 4;
 
+	// give follower same elevation as player, fix a glictes for aim walking that follower not stay on stairs
+	pattern = hook::pattern("8b 15 ? ? ? ? dc 0d ? ? ? ? d9 5d fc d9 45 fc d9 5c 24 08");
+	struct moveBehindFloorCheck
+	{
+		void operator()(injector::reg_pack& regs)
+		{
+			if (pConfig->bAimAndMove_kbm)
+			{					
+				// make follower same elevation  as player
+				float *subChar_pos_y = (float*)(regs.esi + 0x98);
+				*subChar_pos_y = PlayerPtr()->pos_94.y;
+			}
+			// code we replaced
+			regs.edx = (uint32_t) PlayerPtr();
+		}
+	}; injector::MakeInline<moveBehindFloorCheck>(pattern.count(1).get(0).get<uint32_t>(0), pattern.count(1).get(0).get<uint32_t>(6));
+
 	// Hook PadRead to change the camera sensitivity
 	pattern = hook::pattern("74 ? dd 05 ? ? ? ? eb ? dd 05 ? ? ? ? dc f9");
 	struct CameraSens
