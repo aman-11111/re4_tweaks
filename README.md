@@ -22,8 +22,8 @@ This is a fork of RE4 Tweaks repos for experimentations of strafing and walking 
 *  Only support A,D,W,S keys, non-configurable.
 *  Only support Controller Type III. Left stick for strafing. Right stick for turning. Run [A button] and turn together is not easy.
 *  No player animation for strafing. No animation for walking while aiming
-*  Lot of game glitches. Ashley following Leon will not stay on ground height while he aim and walk up or down stairs.
-*  Not tested against the full game. Expect more game breaking glitches.
+*  [Fixed]~~Ashley following Leon will not stay on ground height while he aim and walk up or down stairs.~~
+*  Not tested against the full game. Expect game breaking glitches.
 
 ### Acknowledgments
 * [nipkownix] for releasing RE4 Tweaks with source code. A game enchancing framework that make this mod possible. 
