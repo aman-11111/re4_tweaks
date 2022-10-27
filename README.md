@@ -1,9 +1,9 @@
 ### Description
-This is a fork of RE4 Tweaks repo for experimentations of strafing and walking while aiming
+This is a fork of RE4 Tweaks repo for experimentations of strafing and aim walking
 
 ### What is new
 * **Strafing** - Use A,D keys or controller left stick to side step. Right stick to turn player.
-* **Walk while Aiming** - Use A,D,W,S key or contoller left stick to moving around. 
+* **Walk while Aiming** - Use A,D,W,S key or contoller left stick to move around. 
 
 ### Disclaimer 
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.   
@@ -18,7 +18,6 @@ This is a fork of RE4 Tweaks repo for experimentations of strafing and walking w
 *  Load or start a new game.
 
 ### Known Issues
-*  Occasional  game freeze on start or after loading a save game.
 *  Only support A,D,W,S keys, non-configurable.
 *  Only support Controller Type III. Left stick for strafing. Right stick for turning. Run [A button] and turn together is not easy.
 *  No player animation for strafing. No animation for walking while aiming
