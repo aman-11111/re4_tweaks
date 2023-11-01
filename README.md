@@ -3,7 +3,8 @@ This is a fork of RE4 Tweaks repo for experimentations of strafing and aim walki
 
 ### What is new
 * **Strafing** - Use A,D keys or controller left stick to side step. Right stick to turn player.
-* **Walk while Aiming** - Use A,D,W,S key or contoller left stick to move around. 
+* **Walk while Aiming** - Use A,D,W,S key or contoller left stick to move around.
+* Demos: <https://www.youtube.com/watch?v=uDFVV8LqxLQ> <https://www.youtube.com/watch?v=XFGExnNcAsY>
 
 ### Disclaimer 
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.   
